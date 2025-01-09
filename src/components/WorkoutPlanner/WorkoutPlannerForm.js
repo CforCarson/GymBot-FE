@@ -24,7 +24,9 @@ const WorkoutPlannerForm = () => {
 
   const [adjustForm, setAdjustForm] = useState({
     daily_diet: '',
-    daily_sleep: ''
+    daily_sleep: '',
+    injuries: '',
+    stress_level: ''
   });
 
   const [adjustedPlan, setAdjustedPlan] = useState(null);
@@ -87,6 +89,8 @@ const WorkoutPlannerForm = () => {
     data.append('name', formData.name);
     data.append('daily_diet', adjustForm.daily_diet);
     data.append('daily_sleep', adjustForm.daily_sleep);
+    data.append('injuries', adjustForm.injuries);
+    data.append('stress_level', adjustForm.stress_level);
 
     axios.post('http://localhost:8000/adjust_workout_plan', data, {
       headers: {
@@ -292,7 +296,16 @@ const WorkoutPlannerForm = () => {
                   <h2 style={{ marginBottom: '0.5rem' }}>{day}</h2>
                   <ul style={{ paddingLeft: '1.2rem' }}>
                     {exercises.map((ex, i) => (
-                      <li key={i} style={{ marginBottom: '0.25rem' }}>{ex}</li>
+                      <li key={i} style={{ marginBottom: '0.25rem' }}>
+                        {typeof ex === 'object'
+                          ? (
+                              Object.entries(ex).map(([key, value]) => (
+                                <div key={key}>{key}: {value}</div>
+                              ))
+                            )
+                          : ex
+                        }
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -331,6 +344,24 @@ const WorkoutPlannerForm = () => {
                     style={{ width: '100%', padding: '0.5rem' }}
                   />
 
+                  <label style={{ display: 'block', fontWeight: 'bold' }}>Injuries:</label>
+                  <input
+                    type="text"
+                    name="injuries"
+                    value={adjustForm.injuries}
+                    onChange={handleAdjustFormChange}
+                    placeholder="e.g. Knee pain"
+                  />
+
+                  <label style={{ display: 'block', fontWeight: 'bold' }}>Stress Level:</label>
+                  <input
+                    type="text"
+                    name="stress_level"
+                    value={adjustForm.stress_level}
+                    onChange={handleAdjustFormChange}
+                    placeholder="e.g. High or Low"
+                  />
+
                   <button type="submit" style={{ marginTop: '1rem', padding: '0.8rem 1.2rem' }}>
                     Adjust Plan
                   </button>
@@ -354,7 +385,16 @@ const WorkoutPlannerForm = () => {
                     <h3 style={{ marginBottom: '0.5rem' }}>{day}</h3>
                     <ul style={{ paddingLeft: '1.2rem' }}>
                       {exercises.map((ex, i) => (
-                        <li key={i} style={{ marginBottom: '0.25rem' }}>{ex}</li>
+                        <li key={i} style={{ marginBottom: '0.25rem' }}>
+                          {typeof ex === 'object'
+                            ? (
+                                Object.entries(ex).map(([key, value]) => (
+                                  <div key={key}>{key}: {value}</div>
+                                ))
+                              )
+                            : ex
+                          }
+                        </li>
                       ))}
                     </ul>
                   </div>
