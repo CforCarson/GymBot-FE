@@ -22,6 +22,13 @@ const WorkoutPlannerForm = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [adjustForm, setAdjustForm] = useState({
+    daily_diet: '',
+    daily_sleep: ''
+  });
+
+  const [adjustedPlan, setAdjustedPlan] = useState(null);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -65,6 +72,35 @@ const WorkoutPlannerForm = () => {
         }
         setWorkoutPlan(null);
       });
+  };
+
+  const handleAdjustFormChange = (e) => {
+    setAdjustForm({
+      ...adjustForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleAdjustPlan = (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('daily_diet', adjustForm.daily_diet);
+    data.append('daily_sleep', adjustForm.daily_sleep);
+
+    axios.post('http://localhost:8000/adjust_workout_plan', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then((response) => {
+      setAdjustedPlan(response.data.adjusted_plan);
+      setError(null);
+    })
+    .catch((error) => {
+      console.error(error);
+      setError('Error adjusting plan. Please try again.');
+    });
   };
 
   return (
@@ -262,9 +298,69 @@ const WorkoutPlannerForm = () => {
                 </div>
               ))}
             </div>
-            <button onClick={() => setWorkoutPlan(null)} style={{ marginTop: '1rem' }}>
+
+            <button onClick={() => {
+              setWorkoutPlan(null);
+              setAdjustedPlan(null);
+            }} style={{ marginTop: '1rem' }}>
               Go Back
             </button>
+
+            {workoutPlan && !loading && (
+              <>
+                <form onSubmit={handleAdjustPlan} style={{ marginTop: '1rem' }}>
+                  <h2>Adjust Your Plan</h2>
+
+                  <label style={{ display: 'block', fontWeight: 'bold' }}>Daily Diet:</label>
+                  <input
+                    type="text"
+                    name="daily_diet"
+                    value={adjustForm.daily_diet}
+                    onChange={handleAdjustFormChange}
+                    placeholder="e.g. High protein, moderate carbs..."
+                    style={{ width: '100%', padding: '0.5rem' }}
+                  />
+
+                  <label style={{ display: 'block', fontWeight: 'bold' }}>Daily Sleep (hours):</label>
+                  <input
+                    type="number"
+                    name="daily_sleep"
+                    value={adjustForm.daily_sleep}
+                    onChange={handleAdjustFormChange}
+                    placeholder="e.g. 7"
+                    style={{ width: '100%', padding: '0.5rem' }}
+                  />
+
+                  <button type="submit" style={{ marginTop: '1rem', padding: '0.8rem 1.2rem' }}>
+                    Adjust Plan
+                  </button>
+                </form>
+              </>
+            )}
+
+            {adjustedPlan && (
+              <div
+                className="workout-plan-container"
+                style={{
+                  border: '1px solid #ccc',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  marginTop: '1rem'
+                }}
+              >
+                <h2>Adjusted Plan</h2>
+                {Object.entries(adjustedPlan).map(([day, exercises]) => (
+                  <div key={day} style={{ marginBottom: '1rem' }}>
+                    <h3 style={{ marginBottom: '0.5rem' }}>{day}</h3>
+                    <ul style={{ paddingLeft: '1.2rem' }}>
+                      {exercises.map((ex, i) => (
+                        <li key={i} style={{ marginBottom: '0.25rem' }}>{ex}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })()}
